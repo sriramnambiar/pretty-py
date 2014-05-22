@@ -1,5 +1,5 @@
 import types
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
 
 __all__ = [
     "Symbol", "Field", "Record", "TypeRecord",
@@ -8,20 +8,50 @@ __all__ = [
 
 
 #
-# Symbol, Field, Record
+# Symbol, Field, Record, TypeRecord
 #
 
-Symbol = namedtuple("Symbol", ["name"])
-Field = namedtuple("Field", ["name", "value"])
-Record = namedtuple("Record", ["name", "fields"])
-TypeRecord = namedtuple("TypeRecord", ["name", "fields"])
+class Symbol(object) :
+    def __init__(self, name) :
+        self.name = name
+
+    def __str__(self) :
+        return "Symbol(%s)" % (repr(self.name),)
+
+class Field(object) :
+    def __init__(self, name, value) :
+        self.name = name
+        self.value = value
+
+    def __str__(self) :
+        return "Field(%s, %s)" % (repr(self.name), repr(self.value))
+
+class Record(object) :
+    def __init__(self, name, fields) :
+        self.name = name
+        self.fields = fields
+
+    def __str__(self) :
+        return "Record(%s, %s)" % (repr(self.name), repr(self.fields))
+
+class TypeRecord(object) :
+    def __init__(self, name, fields) :
+        self.name = name
+        self.fields = fields
+
+    def __str__(self) :
+        return "TypeRecord(%s, %s)" % (repr(self.name), repr(self.fields))
 
 
 #
 # Flex
 #
 
-Flex = namedtuple("Flex", ["head", "items", "tail"])
+class Flex(object) :
+    def __init__(self, head, items, tail) :
+        self.head = head
+        self.items = items
+        self.tail = tail
 
 
 #
