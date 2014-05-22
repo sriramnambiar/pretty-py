@@ -2,13 +2,13 @@ import types
 from collections import OrderedDict
 
 __all__ = [
-    "Symbol", "Field", "Record", "TypeRecord",
+    "Symbol", "Field", "Record",
     "format", "display"
 ]
 
 
 #
-# Symbol, Field, Record, TypeRecord
+# Symbol, Field, Record
 #
 
 class Symbol(object) :
@@ -27,20 +27,19 @@ class Field(object) :
         return "Field(%s, %s)" % (repr(self.name), repr(self.value))
 
 class Record(object) :
-    def __init__(self, name, fields) :
+    def __init__(self, name, fields, opener="(", closer=")") :
         self.name = name
         self.fields = fields
+        self.opener = opener
+        self.closer = closer
 
     def __str__(self) :
-        return "Record(%s, %s)" % (repr(self.name), repr(self.fields))
-
-class TypeRecord(object) :
-    def __init__(self, name, fields) :
-        self.name = name
-        self.fields = fields
-
-    def __str__(self) :
-        return "TypeRecord(%s, %s)" % (repr(self.name), repr(self.fields))
+        return "Record%s%s, %s%s" % (
+            repr(self.name),
+            self.opener,
+            repr(self.fields),
+            self.closer
+        )
 
 
 #
@@ -88,10 +87,7 @@ class FlexMaker(object) :
             result = x.name
         elif t is Record :
             items = [self.make(f) for f in x.fields]
-            result = Flex(x.name + "(", items, ")")
-        elif t is TypeRecord :
-            items = [self.make(f) for f in x.fields]
-            result = Flex(x.name + "[", items, "]")
+            result = Flex(x.name + x.opener, items, x.closer)
         elif t is Field :
             head = x.name + ": "
             inner = self.make(x.value)
