@@ -35,8 +35,8 @@ class Record(object) :
 
     def __str__(self) :
         return "Record%s%s, %s%s" % (
-            repr(self.name),
             self.opener,
+            repr(self.name),
             repr(self.fields),
             self.closer
         )
