@@ -52,6 +52,10 @@ class Flex(object) :
         self.items = items
         self.tail = tail
 
+    def __str__(self) :
+        values = (repr(self.head), repr(self.items), repr(self.tail))
+        return "Flex(head=%s, items=%s, tail=%s)" % values
+
 
 #
 # FlexMaker
