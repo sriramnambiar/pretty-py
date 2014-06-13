@@ -140,7 +140,7 @@ class FlexMaker(object) :
         elif t in (types.DictType, OrderedDict) :
             items = []
             for k, v in x.items() :
-                f = Field(repr(k), self.make(v))
+                f = Field(repr(k), v)
                 items.append(self.make(f))
             result = Flex("{", items, "}")
             result.all_or_nothing_on_same_line = True
