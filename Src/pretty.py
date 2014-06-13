@@ -27,11 +27,16 @@ class Field(object) :
         return "Field(%s, %s)" % (repr(self.name), repr(self.value))
 
 class Record(object) :
-    def __init__(self, name, fields, opener="(", closer=")") :
+    def __init__(self,
+        name, fields,
+        opener="(", closer=")",
+        all_or_nothing_on_same_line=False
+    ) :
         self.name = name
         self.fields = fields
         self.opener = opener
         self.closer = closer
+        self.all_or_nothing_on_same_line = all_or_nothing_on_same_line
 
     def __str__(self) :
         return "Record%s%s, %s%s" % (
@@ -51,10 +56,18 @@ class Flex(object) :
         self.head = head
         self.items = items
         self.tail = tail
+        self.all_or_nothing_on_same_line = False
 
     def __str__(self) :
         values = (repr(self.head), repr(self.items), repr(self.tail))
         return "Flex(head=%s, items=%s, tail=%s)" % values
+
+def child_all_or_nothing_on_same_line(flex_list) :
+    for x in flex_list :
+        if isinstance(x, Flex) :
+            if x.all_or_nothing_on_same_line :
+                return True
+    return False
 
 
 #
@@ -92,6 +105,10 @@ class FlexMaker(object) :
         elif t is Record :
             items = [self.make(f) for f in x.fields]
             result = Flex(x.name + x.opener, items, x.closer)
+            if x.all_or_nothing_on_same_line :
+                result.all_or_nothing_on_same_line = True
+            elif child_all_or_nothing_on_same_line(items) :
+                result.all_or_nothing_on_same_line = True
         elif t is Field :
             head = x.name + ": "
             inner = self.make(x.value)
@@ -101,23 +118,32 @@ class FlexMaker(object) :
             elif t2 is Flex :
                 head += inner.head
                 result = Flex(head, inner.items, inner.tail)
+                if inner.all_or_nothing_on_same_line :
+                    result.all_or_nothing_on_same_line = True
             else :
                 assert False
         elif t is types.TupleType :
             items = [self.make(y) for y in x]
             result = Flex("(", items, ")")
+            if child_all_or_nothing_on_same_line(items) :
+                result.all_or_nothing_on_same_line = True
         elif t is types.ListType :
             items = [self.make(y) for y in x]
             result = Flex("[", items, "]")
+            if child_all_or_nothing_on_same_line(items) :
+                result.all_or_nothing_on_same_line = True
         elif t is set :
             items = [self.make(y) for y in x]
             result = Flex("set(", items, ")")
+            if child_all_or_nothing_on_same_line(items) :
+                result.all_or_nothing_on_same_line = True
         elif t in (types.DictType, OrderedDict) :
             items = []
             for k, v in x.items() :
                 f = Field(repr(k), self.make(v))
                 items.append(self.make(f))
             result = Flex("{", items, "}")
+            result.all_or_nothing_on_same_line = True
         else :
             result = repr(x)
 
@@ -206,11 +232,20 @@ class Formatter(object) :
             output.add(x.head)
             if len(x.items) > 0 :
                 self.new_line(output, level+1)
-                last_was_multiline = False
-                for y in x.items :
-                    last_was_multiline = self.format(
-                        y, output, level + 1, max_width, last_was_multiline
-                    )
+                if x.all_or_nothing_on_same_line :
+                    for i, y in enumerate(x.items) :
+                        if i != 0 :
+                            output.add(",")
+                            self.new_line(output, level+1)
+                        self.format(y, output, level+1, max_width, False)
+
+                else :
+                    last_was_multiline = False
+                    for y in x.items :
+                        last_was_multiline = self.format(
+                            y, output, level + 1, max_width,
+                            last_was_multiline
+                        )
             self.new_line(output, level)
             output.add(x.tail)
             multiline = True
