@@ -2,9 +2,20 @@ import types
 from collections import OrderedDict
 
 __all__ = [
+    "install_custom_prettifier",
     "Symbol", "Field", "Record",
     "format", "display"
 ]
+
+
+#
+# install_custom_prettifier
+#
+
+_custom_prettifiers = []
+
+def install_custom_prettifier(predicate, prettifier) :
+    _custom_prettifiers.append([predicate, prettifier])
 
 
 #
@@ -98,7 +109,13 @@ class FlexMaker(object) :
         self._processing.add(value_id)
 
         result = None
-        if hasattr(x, "to_pretty") :
+        for predicate, prettifier in _custom_prettifiers :
+            if predicate(x) :
+                result = self.make(prettifier(x))
+                break
+        if result is not None :
+            pass
+        elif hasattr(x, "to_pretty") :
             result = self.make(x.to_pretty())
         elif t is Symbol :
             result = x.name
