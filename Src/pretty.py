@@ -30,9 +30,10 @@ class Symbol(object) :
         return "Symbol(%s)" % (repr(self.name),)
 
 class Field(object) :
-    def __init__(self, name, value) :
+    def __init__(self, name, value, separator=": ") :
         self.name = name
         self.value = value
+        self.separator = separator
 
     def __str__(self) :
         return "Field(%s, %s)" % (repr(self.name), repr(self.value))
@@ -127,7 +128,7 @@ class FlexMaker(object) :
             elif child_all_or_nothing_on_same_line(items) :
                 result.all_or_nothing_on_same_line = True
         elif t is Field :
-            head = x.name + ": "
+            head = x.name + x.separator
             inner = self.make(x.value)
             t2 = type(inner)
             if t2 is types.StringType :
